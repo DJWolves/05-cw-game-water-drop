@@ -1,6 +1,10 @@
 // Variables to control game state
 let gameRunning = false; // Keeps track of whether game is active or not
 let dropMaker; // Will store our timer that creates drops regularly
+let timerInterval;
+let score = 0;
+const gameDuration = 30;
+let timeRemaining = gameDuration;
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
@@ -10,9 +14,29 @@ function startGame() {
   if (gameRunning) return;
 
   gameRunning = true;
+  score = 0;
+  timeRemaining = gameDuration;
+  document.getElementById("score").textContent = score;
+  document.getElementById("time").textContent = timeRemaining;
 
   // Create new drops every second (1000 milliseconds)
   dropMaker = setInterval(createDrop, 1000);
+
+  // Countdown timer updates once per second
+  timerInterval = setInterval(() => {
+    timeRemaining -= 1;
+    document.getElementById("time").textContent = timeRemaining;
+
+    if (timeRemaining <= 0) {
+      endGame();
+    }
+  }, 1000);
+}
+
+function endGame() {
+  gameRunning = false;
+  clearInterval(dropMaker);
+  clearInterval(timerInterval);
 }
 
 function createDrop() {
@@ -37,6 +61,13 @@ function createDrop() {
 
   // Add the new drop to the game screen
   document.getElementById("game-container").appendChild(drop);
+
+  // Remove and score when a droplet is clicked
+  drop.addEventListener("click", () => {
+    score += 1;
+    document.getElementById("score").textContent = score;
+    drop.remove();
+  });
 
   // Remove drops that reach the bottom (weren't clicked)
   drop.addEventListener("animationend", () => {
