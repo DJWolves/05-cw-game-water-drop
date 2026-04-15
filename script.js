@@ -13,6 +13,9 @@ function startGame() {
   // Prevent multiple games from running at once
   if (gameRunning) return;
 
+  removeResultPopup();
+  clearDrops();
+
   gameRunning = true;
   score = 0;
   timeRemaining = gameDuration;
@@ -37,6 +40,55 @@ function endGame() {
   gameRunning = false;
   clearInterval(dropMaker);
   clearInterval(timerInterval);
+  showResultPopup();
+}
+
+function clearDrops() {
+  const gameContainer = document.getElementById("game-container");
+  gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
+}
+
+function showResultPopup() {
+  removeResultPopup();
+
+  const overlay = document.createElement("div");
+  overlay.id = "result-popup";
+  overlay.className = "result-popup-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "result-popup-modal";
+  modal.innerHTML = `
+    <p>Congrats! You collected ${score} of water droplets!</p>
+    <button id="play-again-btn" type="button">Play Again</button>
+  `;
+
+  overlay.appendChild(modal);
+  createConfetti(overlay, 90);
+  document.body.appendChild(overlay);
+
+  document.getElementById("play-again-btn").addEventListener("click", startGame);
+}
+
+function removeResultPopup() {
+  const existingPopup = document.getElementById("result-popup");
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+}
+
+function createConfetti(container, count) {
+  const colors = ["#FFC907", "#2E9DF7", "#8BD1CB", "#4FCB53", "#FF902A", "#F5402C"];
+
+  for (let i = 0; i < count; i += 1) {
+    const piece = document.createElement("span");
+    piece.className = "confetti-piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = `${Math.random() * 0.8}s`;
+    piece.style.animationDuration = `${2.4 + Math.random() * 1.8}s`;
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    container.appendChild(piece);
+  }
 }
 
 function createDrop() {
