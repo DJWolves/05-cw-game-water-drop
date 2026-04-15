@@ -33,6 +33,25 @@ body {
     font-family: Arial, sans-serif;
 }
 
+
+
+.cloud-background {
+
+  background-image: url('img/clouds.PNG');
+  background-size: cover;
+  background-position: center;
+
+
+
+}
+
+
+
+
+
+
+
+
 .game-wrapper {
     display: flex;
     flex-direction: column;
