@@ -55,8 +55,9 @@ body {
 
 .score-panel {
     display: flex;
-    justify-content: space-between;  /* Space between score and button */
+    justify-content: flex-start;
     align-items: center;
+    gap: 16px;
     width: 800px;
     padding: 10px;
     background-color: #fff;
@@ -66,6 +67,14 @@ body {
 
 .timer {
     flex: 0 1 auto;
+    margin-left: 48px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.high-score {
+    flex: 0 1 auto;
+    margin-left: 16px;
     font-size: 24px;
     font-weight: bold;
 }
@@ -85,6 +94,7 @@ body {
 
 
 #start-btn {
+    margin-left: auto;
     padding: 8px 16px;
     background-color: #ffc907;
     color: rgb(0, 0, 0);
@@ -96,6 +106,21 @@ body {
 
 #start-btn:hover {
     background-color: #e6b400;
+}
+
+#reset-btn {
+    margin-left: 8px;
+    padding: 8px 16px;
+    background-color: #2e9df7;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#reset-btn:hover {
+    background-color: #1f87dc;
 }
 
 .score {

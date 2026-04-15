@@ -3,11 +3,13 @@ let gameRunning = false; // Keeps track of whether game is active or not
 let dropMaker; // Will store our timer that creates drops regularly
 let timerInterval;
 let score = 0;
+let highScore = 0;
 const gameDuration = 30;
 let timeRemaining = gameDuration;
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
+document.getElementById("reset-btn").addEventListener("click", resetGame);
 
 function startGame() {
   // Prevent multiple games from running at once
@@ -37,10 +39,28 @@ function startGame() {
 }
 
 function endGame() {
+  if (score > highScore) {
+    highScore = score;
+    document.getElementById("high-score").textContent = highScore;
+  }
+
   gameRunning = false;
   clearInterval(dropMaker);
   clearInterval(timerInterval);
   showResultPopup();
+}
+
+function resetGame() {
+  gameRunning = false;
+  clearInterval(dropMaker);
+  clearInterval(timerInterval);
+  removeResultPopup();
+  clearDrops();
+
+  score = 0;
+  timeRemaining = gameDuration;
+  document.getElementById("score").textContent = score;
+  document.getElementById("time").textContent = timeRemaining;
 }
 
 function clearDrops() {
