@@ -29,21 +29,15 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    background-image: url('img/Outer_border_for_things.jpg');
+    background-size: cover;
+   background-position: center;
     font-family: Arial, sans-serif;
 }
 
 
 
-.cloud-background {
 
-  background-image: url('img/clouds.PNG');
-  background-size: cover;
-  background-position: center;
-
-
-
-}
 
 
 
@@ -77,9 +71,12 @@ body {
 }
 
 #game-container {
-    width: 800px;
-    height: 600px;
-    background-color: #e6f7ff;
+    width: 700px;
+    height: 700px;
+    background-image: url('img/clouds.PNG'), url('img/lvl7.JPG');
+    background-size: cover, contain;
+    background-repeat: no-repeat, no-repeat;
+    background-position: center, center;
     border: 2px solid #333;
     border-radius: 8px;
     position: relative;
@@ -89,8 +86,8 @@ body {
 
 #start-btn {
     padding: 8px 16px;
-    background-color: #4CAF50;
-    color: white;
+    background-color: #ffc907;
+    color: rgb(0, 0, 0);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -98,7 +95,7 @@ body {
 }
 
 #start-btn:hover {
-    background-color: #45a049;
+    background-color: #e6b400;
 }
 
 .score {
@@ -111,7 +108,9 @@ body {
     position: absolute;
     width: 60px;  /* increased from 40px */
     height: 60px; /* increased from 40px */
-    background-color: #0099ff;
+    background-image: url('img/droplet.PNG');
+    background-size: contain;
+    background-repeat: no-repeat;
     border-radius: 50%;
     animation: dropFall linear forwards;
     transform-origin: center;
@@ -138,7 +137,7 @@ body {
 }
 
 .game-tagline {
-    color: #666;
+    color: #159a48;
     font-size: 18px;
     margin-bottom: 20px;
     text-align: center;
