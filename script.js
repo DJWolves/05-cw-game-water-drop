@@ -35,7 +35,7 @@ const gameModes = {
   'free-catcher': {
     label: 'Free Catcher',
     duration: 45,
-    spawnInterval: 500,
+    spawnInterval: 400,
     dropSizeMultiplier: { min: 0.9, max: 1.3 },
   },
 };
@@ -71,6 +71,7 @@ function hideWelcomePopup() {
 // Wait for button click to start the game
 document.getElementById("reset-btn").addEventListener("click", resetGame);
 document.getElementById("welcome-start-btn").addEventListener("click", handleMenuStart);
+document.getElementById("settings-start-btn").addEventListener("click", handleSettingsStart);
 document.getElementById("settings-btn").addEventListener("click", toggleSettingsMenu);
 document.getElementById("sound-toggle").addEventListener("change", handleSoundToggle);
 
@@ -146,6 +147,16 @@ function handleSoundToggle(event) {
 function handleMenuStart() {
   if (welcomePopupOpen) {
     hideWelcomePopup();
+  }
+  startGame();
+}
+
+function handleSettingsStart() {
+  closeSettingsMenu();
+  if (gameRunning) {
+    gameRunning = false;
+    clearInterval(dropMaker);
+    clearInterval(timerInterval);
   }
   startGame();
 }
