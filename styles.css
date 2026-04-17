@@ -26,13 +26,19 @@ Fonts:
 
 body {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     min-height: 100vh;
     background-image: url('img/Outer_border_for_things.jpg');
     background-size: cover;
-   background-position: center;
-    font-family: Arial, sans-serif;
+    background-position: center;
+    font-family: 'Figtree', sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
 }
 
 .welcome-popup {
@@ -107,8 +113,26 @@ body {
     color: #131313;
     font-size: 18px;
     font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-align: center;
+    line-height: 1.2;
     cursor: pointer;
     transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.difficulty-label {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.difficulty-target {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.85;
 }
 
 .difficulty-btn:hover {
@@ -136,6 +160,8 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    flex: 1;
+    justify-content: center;
 }
 
 .score-panel {
@@ -144,6 +170,7 @@ body {
     align-items: center;
     gap: 16px;
     width: 800px;
+    max-width: 95vw;
     padding: 10px;
     background-color: #fff;
     border-radius: 8px;
@@ -259,10 +286,10 @@ body {
     width: 700px;
     height: 700px;
     background-image: url('img/clouds.PNG'), url('img/lvl7.JPG');
-    background-size: cover, contain;
+    background-size: 100%, 100%;
     background-repeat: no-repeat, no-repeat;
     background-position: center, center;
-    border: 2px solid #333;
+    border: 2px solid #333; 
     border-radius: 8px;
     position: relative;
     overflow: hidden;
@@ -345,6 +372,10 @@ body {
     transition: transform 0.1s ease;  /* Smooth hover effect */
 }
 
+.water-drop.corruption-drop {
+    background-image: url('img/Corruption.png');
+}
+
 .water-drop:hover {
     transform: scale(1.1);  /* Slight grow effect on hover */
 }
@@ -354,7 +385,7 @@ body {
 }
 
 .game-title {
-    color: #131313;
+    color: #159a48;
     font-size: 48px;
     margin-top: 0;
     margin-bottom: 5px;  /* reduced from 20px */
@@ -504,6 +535,19 @@ body {
 @media (max-width: 850px) {
     .game-wrapper, .score-panel, #game-container {
         width: 95vw;
+        margin: 0 auto;
+    }
+
+    .score-panel.free-catcher-wrap {
+        flex-wrap: wrap;
+    }
+
+    .score-panel.free-catcher-wrap .settings-wrapper {
+        margin-left: 0;
+        flex-basis: 100%;
+        order: 10;
+        display: flex;
+        justify-content: flex-end;
     }
 
     .difficulty-grid {
@@ -511,6 +555,21 @@ body {
     }
     
     #game-container {
-        height: 70vh;
+        width: min(95vw, 70vh);
+        aspect-ratio: 1 / 1;
+        height: auto;
     }
+}
+
+
+
+
+
+
+.footer {
+    width: 100%;
+    padding: 12px 0;
+    background-color: #FFC907;
+    text-align: center;
+    margin-top: auto;
 }

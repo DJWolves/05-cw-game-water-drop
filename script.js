@@ -3,11 +3,15 @@ let gameRunning = false; // Keeps track of whether game is active or not
 let dropMaker; // Will store our timer that creates drops regularly
 let timerInterval;
 let score = 0;
+let corruptionCaught = 0;
 let highScore = 0;
 const gameDuration = 30;
 let timeRemaining = gameDuration;
+const corruptionLoseThreshold = 10;
 const waterDropSound = new Audio('audio file/water-drip.mp3');
 waterDropSound.preload = 'auto';
+const corruptionDropSound = new Audio('audio file/sizzle.mp3');
+corruptionDropSound.preload = 'auto';
 let selectedMode = 'easy';
 let currentModeKey = 'easy';
 let soundEnabled = true;
@@ -43,6 +47,14 @@ const gameModes = {
     spawnInterval: 400,
     dropSizeMultiplier: { min: 0.9, max: 1.3 },
   },
+  corruption: {
+    label: 'Corruption',
+    duration: 30,
+    winScore: 30,
+    catchText: 'Catch 30 clean water to win (10 corruption = lose)',
+    spawnInterval: 500,
+    dropSizeMultiplier: { min: 0.75, max: 1.1 },
+  },
 };
 
 function getStoredSoundEnabled() {
@@ -59,6 +71,31 @@ function storeSoundEnabled(value) {
   } catch {
     // Ignore storage failures and keep the in-memory setting.
   }
+}
+
+function getModeCatchText(modeKey) {
+  const mode = gameModes[modeKey];
+  if (!mode) return '';
+
+  if (mode.catchText) {
+    return mode.catchText;
+  }
+
+  if (Number.isFinite(mode.winScore)) {
+    return `Catch ${mode.winScore} to win`;
+  }
+
+  return 'Catch as many as you can';
+}
+
+function renderDifficultyButtonLabels() {
+  document.querySelectorAll('.difficulty-btn').forEach((button) => {
+    const modeKey = button.dataset.mode;
+    const mode = gameModes[modeKey];
+    if (!mode) return;
+
+    button.innerHTML = `<span class="difficulty-label">${mode.label}</span><span class="difficulty-target">${getModeCatchText(modeKey)}</span>`;
+  });
 }
 
 function showWelcomePopup() {
@@ -116,6 +153,9 @@ if (storedSoundEnabled !== null) {
 
 document.getElementById("sound-toggle").checked = soundEnabled;
 updateSettingsMenuState();
+updateHighScoreVisibility();
+updateScorePanelLayout();
+renderDifficultyButtonLabels();
 
 document.querySelectorAll(".difficulty-btn").forEach((button) => {
   button.addEventListener("click", () => {
@@ -149,6 +189,24 @@ function setSelectedMode(mode) {
   document.querySelectorAll(".difficulty-btn").forEach((option) => {
     option.classList.toggle("is-selected", option.dataset.mode === selectedMode);
   });
+  updateHighScoreVisibility();
+  updateScorePanelLayout();
+}
+
+function updateHighScoreVisibility() {
+  const highScoreElement = document.querySelector(".high-score");
+  if (selectedMode === 'free-catcher') {
+    highScoreElement.style.display = 'flex';
+  } else {
+    highScoreElement.style.display = 'none';
+  }
+}
+
+function updateScorePanelLayout() {
+  const scorePanel = document.querySelector(".score-panel");
+  if (!scorePanel) return;
+
+  scorePanel.classList.toggle("free-catcher-wrap", selectedMode === 'free-catcher');
 }
 
 function toggleSettingsMenu() {
@@ -213,6 +271,7 @@ function startGame() {
 
   gameRunning = true;
   score = 0;
+  corruptionCaught = 0;
   timeRemaining = mode.duration;
   document.getElementById("score").textContent = score;
   document.getElementById("time").textContent = timeRemaining;
@@ -233,9 +292,12 @@ function startGame() {
 }
 
 function endGame() {
+  if (!gameRunning) return;
+
   const mode = gameModes[currentModeKey] || gameModes.easy;
   const hasWinCondition = Number.isFinite(mode.winScore);
-  const didWin = !hasWinCondition || score >= mode.winScore;
+  const failedByCorruption = currentModeKey === 'corruption' && corruptionCaught >= corruptionLoseThreshold;
+  const didWin = !failedByCorruption && (!hasWinCondition || score >= mode.winScore);
 
   if (score > highScore) {
     highScore = score;
@@ -246,7 +308,7 @@ function endGame() {
   clearInterval(dropMaker);
   clearInterval(timerInterval);
   document.querySelector(".game-wrapper").classList.remove("is-playing");
-  showResultPopup({ mode, didWin, hasWinCondition });
+  showResultPopup({ mode, didWin, hasWinCondition, failedByCorruption });
 }
 
 function resetGame() {
@@ -260,6 +322,7 @@ function resetGame() {
   document.querySelector(".game-wrapper").classList.remove("is-playing");
 
   score = 0;
+  corruptionCaught = 0;
   timeRemaining = mode.duration;
   document.getElementById("score").textContent = score;
   document.getElementById("time").textContent = timeRemaining;
@@ -275,6 +338,7 @@ function showResultPopup(result = {}) {
     mode = gameModes[currentModeKey] || gameModes.easy,
     didWin = true,
     hasWinCondition = false,
+    failedByCorruption = false,
   } = result;
 
   removeResultPopup();
@@ -285,9 +349,14 @@ function showResultPopup(result = {}) {
 
   const modal = document.createElement("div");
   modal.className = "result-popup-modal";
-  const scoreLine = hasWinCondition
-    ? `You scored ${score}. Target for ${mode.label}: ${mode.winScore}.`
-    : `You scored ${score} in ${mode.label} mode.`;
+  let scoreLine;
+  if (failedByCorruption) {
+    scoreLine = `You caught ${corruptionCaught} corruption drops. Catch fewer than ${corruptionLoseThreshold} to win.`;
+  } else if (hasWinCondition) {
+    scoreLine = `You scored ${score}. Target for ${mode.label}: ${mode.winScore}.`;
+  } else {
+    scoreLine = `You scored ${score} in ${mode.label} mode.`;
+  }
   const resultTitle = didWin ? "You Win!" : "Not Quite!";
 
   modal.innerHTML = `
@@ -332,6 +401,13 @@ function createDrop(mode) {
   const drop = document.createElement("div");
   drop.className = "water-drop";
 
+  // In corruption mode, some drops use the corruption image.
+  const isCorruptionMode = currentModeKey === 'corruption';
+  const useCorruptionDrop = isCorruptionMode && Math.random() < 0.25;
+  if (useCorruptionDrop) {
+    drop.classList.add("corruption-drop");
+  }
+
   // Make drops different sizes for visual variety
   const initialSize = 60;
   const sizeMultiplier = Math.random() * (mode.dropSizeMultiplier.max - mode.dropSizeMultiplier.min) + mode.dropSizeMultiplier.min;
@@ -352,10 +428,23 @@ function createDrop(mode) {
 
   // Remove and score when a droplet is clicked
   drop.addEventListener("click", () => {
+    const isCorruptionHit = useCorruptionDrop && currentModeKey === 'corruption';
+    if (isCorruptionHit) {
+      corruptionCaught += 1;
+    }
+
     score += 1;
     document.getElementById("score").textContent = score;
-    playWaterDropSound();
+    if (isCorruptionHit) {
+      playCorruptionDropSound();
+    } else {
+      playWaterDropSound();
+    }
     drop.remove();
+
+    if (currentModeKey === 'corruption' && corruptionCaught >= corruptionLoseThreshold) {
+      endGame();
+    }
   });
 
   // Remove drops that reach the bottom (weren't clicked)
@@ -371,6 +460,15 @@ function playWaterDropSound() {
 
   waterDropSound.currentTime = 0;
   waterDropSound.play().catch(() => {});
+}
+
+function playCorruptionDropSound() {
+  if (!soundEnabled) {
+    return;
+  }
+
+  corruptionDropSound.currentTime = 0;
+  corruptionDropSound.play().catch(() => {});
 }
 
 setSelectedMode(selectedMode);
