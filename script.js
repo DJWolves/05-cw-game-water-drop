@@ -9,26 +9,31 @@ let timeRemaining = gameDuration;
 const waterDropSound = new Audio('audio file/water-drip.mp3');
 waterDropSound.preload = 'auto';
 let selectedMode = 'easy';
+let currentModeKey = 'easy';
 let soundEnabled = true;
 let settingsMenuOpen = false;
 let welcomePopupOpen = false;
+let helpPopupOpen = false;
 
 const gameModes = {
   easy: {
     label: 'Easy',
     duration: 35,
+    winScore: 25,
     spawnInterval: 900,
     dropSizeMultiplier: { min: 0.8, max: 1.2 },
   },
   normal: {
     label: 'Normal',
     duration: 30,
+    winScore: 35,
     spawnInterval: 650,
     dropSizeMultiplier: { min: 0.7, max: 1.15 },
   },
   hard: {
     label: 'Hard',
     duration: 25,
+    winScore: 40,
     spawnInterval: 420,
     dropSizeMultiplier: { min: 0.6, max: 1 },
   },
@@ -68,11 +73,40 @@ function hideWelcomePopup() {
   welcomePopupOpen = false;
 }
 
+function showHelpPopup() {
+  const helpPopup = document.getElementById("help-popup");
+  const helpBtn = document.getElementById("help-btn");
+
+  helpPopup.hidden = false;
+  helpBtn.setAttribute("aria-expanded", "true");
+  helpPopupOpen = true;
+}
+
+function hideHelpPopup() {
+  const helpPopup = document.getElementById("help-popup");
+  const helpBtn = document.getElementById("help-btn");
+
+  helpPopup.hidden = true;
+  helpBtn.setAttribute("aria-expanded", "false");
+  helpPopupOpen = false;
+}
+
+function toggleHelpPopup() {
+  if (helpPopupOpen) {
+    hideHelpPopup();
+    return;
+  }
+
+  showHelpPopup();
+}
+
 // Wait for button click to start the game
 document.getElementById("reset-btn").addEventListener("click", resetGame);
 document.getElementById("welcome-start-btn").addEventListener("click", handleMenuStart);
 document.getElementById("settings-start-btn").addEventListener("click", handleSettingsStart);
 document.getElementById("settings-btn").addEventListener("click", toggleSettingsMenu);
+document.getElementById("help-btn").addEventListener("click", toggleHelpPopup);
+document.getElementById("help-close-btn").addEventListener("click", hideHelpPopup);
 document.getElementById("sound-toggle").addEventListener("change", handleSoundToggle);
 
 const storedSoundEnabled = getStoredSoundEnabled();
@@ -97,8 +131,14 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === 'Escape' && settingsMenuOpen) {
-    closeSettingsMenu();
+  if (event.key === 'Escape') {
+    if (helpPopupOpen) {
+      hideHelpPopup();
+    }
+
+    if (settingsMenuOpen) {
+      closeSettingsMenu();
+    }
   }
 });
 
@@ -166,6 +206,7 @@ function startGame() {
   if (gameRunning) return;
 
   const mode = gameModes[selectedMode] || gameModes.easy;
+  currentModeKey = selectedMode;
   closeSettingsMenu();
   removeResultPopup();
   clearDrops();
@@ -192,6 +233,10 @@ function startGame() {
 }
 
 function endGame() {
+  const mode = gameModes[currentModeKey] || gameModes.easy;
+  const hasWinCondition = Number.isFinite(mode.winScore);
+  const didWin = !hasWinCondition || score >= mode.winScore;
+
   if (score > highScore) {
     highScore = score;
     document.getElementById("high-score").textContent = highScore;
@@ -201,7 +246,7 @@ function endGame() {
   clearInterval(dropMaker);
   clearInterval(timerInterval);
   document.querySelector(".game-wrapper").classList.remove("is-playing");
-  showResultPopup();
+  showResultPopup({ mode, didWin, hasWinCondition });
 }
 
 function resetGame() {
@@ -225,7 +270,13 @@ function clearDrops() {
   gameContainer.querySelectorAll(".water-drop").forEach((drop) => drop.remove());
 }
 
-function showResultPopup() {
+function showResultPopup(result = {}) {
+  const {
+    mode = gameModes[currentModeKey] || gameModes.easy,
+    didWin = true,
+    hasWinCondition = false,
+  } = result;
+
   removeResultPopup();
 
   const overlay = document.createElement("div");
@@ -234,13 +285,21 @@ function showResultPopup() {
 
   const modal = document.createElement("div");
   modal.className = "result-popup-modal";
+  const scoreLine = hasWinCondition
+    ? `You scored ${score}. Target for ${mode.label}: ${mode.winScore}.`
+    : `You scored ${score} in ${mode.label} mode.`;
+  const resultTitle = didWin ? "You Win!" : "Not Quite!";
+
   modal.innerHTML = `
-    <p>Congrats! You collected ${score} of water droplets!</p>
+    <p>${resultTitle}</p>
+    <p>${scoreLine}</p>
     <button id="play-again-btn" type="button">Play Again</button>
   `;
 
   overlay.appendChild(modal);
-  createConfetti(overlay, 90);
+  if (didWin) {
+    createConfetti(overlay, 90);
+  }
   document.body.appendChild(overlay);
 
   document.getElementById("play-again-btn").addEventListener("click", startGame);

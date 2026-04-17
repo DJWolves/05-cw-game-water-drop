@@ -199,6 +199,7 @@ body {
 
 #settings-btn,
 #settings-start-btn,
+#help-btn,
 #reset-btn {
     padding: 8px 16px;
     border: none;
@@ -227,6 +228,17 @@ body {
 
 #settings-start-btn:hover {
     background-color: #1f87dc;
+}
+
+#help-btn {
+    width: 100%;
+    margin-top: 4px;
+    background-color: #8bd1cb;
+    color: #131313;
+}
+
+#help-btn:hover {
+    background-color: #74beb8;
 }
 
 .timer {
@@ -374,6 +386,59 @@ body {
     justify-content: center;
     overflow: hidden;
     z-index: 1000;
+}
+
+.help-popup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1200;
+}
+
+.help-popup[hidden] {
+    display: none !important;
+}
+
+.help-popup-panel {
+    width: min(90vw, 460px);
+    background: #ffffff;
+    border-radius: 14px;
+    border: 3px solid #2e9df7;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+    padding: 20px;
+    text-align: center;
+}
+
+.help-popup-panel h3 {
+    font-size: 28px;
+    color: #131313;
+    margin-bottom: 10px;
+}
+
+.help-popup-panel p {
+    font-size: 16px;
+    color: #424242;
+    line-height: 1.45;
+    margin-bottom: 8px;
+}
+
+#help-close-btn {
+    margin-top: 10px;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-size: 16px;
+    font-weight: 700;
+    background-color: #2e9df7;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+#help-close-btn:hover {
+    background-color: #1f87dc;
 }
 
 .result-popup-modal {

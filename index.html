@@ -50,12 +50,22 @@
                             <span class="toggle-track"></span>
                         </label>
                     </div>
+                    <button id="help-btn" type="button" aria-expanded="false" aria-controls="help-popup">Help</button>
                     <button id="reset-btn" type="button">Reset Game</button>
                 </div>
             </div>
         </div>
         
         <div id="game-container">
+        </div>
+    </div>
+
+    <div id="help-popup" class="help-popup" hidden>
+        <div class="help-popup-panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
+            <h3 id="help-title">How To Play</h3>
+            <p>Pick a mode and click the drops before they hit the bottom.</p>
+            <p>Use Settings to restart, change mode, and toggle sound anytime.</p>
+            <button id="help-close-btn" type="button">Close</button>
         </div>
     </div>
     
