@@ -6,6 +6,8 @@ let score = 0;
 let highScore = 0;
 const gameDuration = 30;
 let timeRemaining = gameDuration;
+const waterDropSound = new Audio('audio file/water-drip.mp3');
+waterDropSound.preload = 'auto';
 
 // Wait for button click to start the game
 document.getElementById("start-btn").addEventListener("click", startGame);
@@ -24,8 +26,8 @@ function startGame() {
   document.getElementById("score").textContent = score;
   document.getElementById("time").textContent = timeRemaining;
 
-  // Create new drops every second (1000 milliseconds)
-  dropMaker = setInterval(createDrop, 1000);
+  // Create new drops twice per second
+  dropMaker = setInterval(createDrop, 500);
 
   // Countdown timer updates once per second
   timerInterval = setInterval(() => {
@@ -118,7 +120,7 @@ function createDrop() {
 
   // Make drops different sizes for visual variety
   const initialSize = 60;
-  const sizeMultiplier = Math.random() * 0.8 + 0.5;
+  const sizeMultiplier = Math.random() * 0.6 + 0.8;
   const size = initialSize * sizeMultiplier;
   drop.style.width = drop.style.height = `${size}px`;
 
@@ -138,6 +140,7 @@ function createDrop() {
   drop.addEventListener("click", () => {
     score += 1;
     document.getElementById("score").textContent = score;
+    playWaterDropSound();
     drop.remove();
   });
 
@@ -145,4 +148,9 @@ function createDrop() {
   drop.addEventListener("animationend", () => {
     drop.remove(); // Clean up drops that weren't caught
   });
+}
+
+function playWaterDropSound() {
+  waterDropSound.currentTime = 0;
+  waterDropSound.play().catch(() => {});
 }
