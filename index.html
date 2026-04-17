@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div id="welcome-popup" class="welcome-popup" hidden>
+        <div class="welcome-popup-panel" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+            <h2 id="welcome-title">Welcome to Water Drop!</h2>
+            <p>Pick a game mode, then start catching water drops.</p>
+            <div class="difficulty-grid welcome-difficulty-grid">
+                <button class="difficulty-btn is-selected" data-mode="easy" type="button">Easy</button>
+                <button class="difficulty-btn" data-mode="normal" type="button">Normal</button>
+                <button class="difficulty-btn" data-mode="hard" type="button">Hard</button>
+                <button class="difficulty-btn" data-mode="free-catcher" type="button">Free Catcher</button>
+            </div>
+            <button id="welcome-start-btn" type="button">Start Game</button>
+        </div>
+    </div>
     <div class="game-wrapper">
         <h1 class="game-title">Water Drop</h1>
         <p class="game-tagline">Catch as many water drops as you can!</p>
@@ -14,8 +27,31 @@
             <div class="score">Score: <span id="score">0</span></div>
             <div class="timer">Time: <span id="time">30</span>s</div>
             <div class="high-score">High Score: <span id="high-score">0</span></div>
-            <button id="start-btn">Start Game</button>
-            <button id="reset-btn">Reset</button>
+            <div class="settings-wrapper">
+                <button id="settings-btn" type="button" aria-expanded="false" aria-controls="settings-menu">Settings</button>
+                <div id="settings-menu" class="settings-menu" hidden>
+                    <div class="settings-section">
+                        <h3>Game Mode</h3>
+                        <div class="settings-mode-grid">
+                            <button class="difficulty-btn is-selected" data-mode="easy" type="button">Easy</button>
+                            <button class="difficulty-btn" data-mode="normal" type="button">Normal</button>
+                            <button class="difficulty-btn" data-mode="hard" type="button">Hard</button>
+                            <button class="difficulty-btn" data-mode="free-catcher" type="button">Free Catcher</button>
+                        </div>
+                    </div>
+                    <div class="settings-section settings-row">
+                        <div>
+                            <h3>Water-Drip Sound</h3>
+                            <p>Turn the sound effect on or off.</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input id="sound-toggle" type="checkbox" checked>
+                            <span class="toggle-track"></span>
+                        </label>
+                    </div>
+                    <button id="reset-btn" type="button">Reset Game</button>
+                </div>
+            </div>
         </div>
         
         <div id="game-container">

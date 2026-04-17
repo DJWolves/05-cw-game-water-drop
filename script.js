@@ -8,26 +8,166 @@ const gameDuration = 30;
 let timeRemaining = gameDuration;
 const waterDropSound = new Audio('audio file/water-drip.mp3');
 waterDropSound.preload = 'auto';
+let selectedMode = 'easy';
+let soundEnabled = true;
+let settingsMenuOpen = false;
+let welcomePopupOpen = false;
+
+const gameModes = {
+  easy: {
+    label: 'Easy',
+    duration: 35,
+    spawnInterval: 900,
+    dropSizeMultiplier: { min: 0.8, max: 1.2 },
+  },
+  normal: {
+    label: 'Normal',
+    duration: 30,
+    spawnInterval: 650,
+    dropSizeMultiplier: { min: 0.7, max: 1.15 },
+  },
+  hard: {
+    label: 'Hard',
+    duration: 25,
+    spawnInterval: 420,
+    dropSizeMultiplier: { min: 0.6, max: 1 },
+  },
+  'free-catcher': {
+    label: 'Free Catcher',
+    duration: 45,
+    spawnInterval: 500,
+    dropSizeMultiplier: { min: 0.9, max: 1.3 },
+  },
+};
+
+function getStoredSoundEnabled() {
+  try {
+    return localStorage.getItem('water-drop-sound-enabled');
+  } catch {
+    return null;
+  }
+}
+
+function storeSoundEnabled(value) {
+  try {
+    localStorage.setItem('water-drop-sound-enabled', String(value));
+  } catch {
+    // Ignore storage failures and keep the in-memory setting.
+  }
+}
+
+function showWelcomePopup() {
+  const welcomePopup = document.getElementById("welcome-popup");
+  welcomePopup.hidden = false;
+  welcomePopupOpen = true;
+}
+
+function hideWelcomePopup() {
+  const welcomePopup = document.getElementById("welcome-popup");
+  welcomePopup.hidden = true;
+  welcomePopupOpen = false;
+}
 
 // Wait for button click to start the game
-document.getElementById("start-btn").addEventListener("click", startGame);
 document.getElementById("reset-btn").addEventListener("click", resetGame);
+document.getElementById("welcome-start-btn").addEventListener("click", handleMenuStart);
+document.getElementById("settings-btn").addEventListener("click", toggleSettingsMenu);
+document.getElementById("sound-toggle").addEventListener("change", handleSoundToggle);
+
+const storedSoundEnabled = getStoredSoundEnabled();
+if (storedSoundEnabled !== null) {
+  soundEnabled = storedSoundEnabled === 'true';
+}
+
+document.getElementById("sound-toggle").checked = soundEnabled;
+updateSettingsMenuState();
+
+document.querySelectorAll(".difficulty-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    setSelectedMode(button.dataset.mode);
+  });
+});
+
+document.addEventListener("click", (event) => {
+  const settingsWrapper = document.querySelector(".settings-wrapper");
+  if (settingsMenuOpen && settingsWrapper && !settingsWrapper.contains(event.target)) {
+    closeSettingsMenu();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === 'Escape' && settingsMenuOpen) {
+    closeSettingsMenu();
+  }
+});
+
+showWelcomePopup();
+
+function setSelectedMode(mode) {
+  selectedMode = gameModes[mode] ? mode : 'easy';
+  document.querySelectorAll(".difficulty-btn").forEach((option) => {
+    option.classList.toggle("is-selected", option.dataset.mode === selectedMode);
+  });
+}
+
+function toggleSettingsMenu() {
+  if (settingsMenuOpen) {
+    closeSettingsMenu();
+    return;
+  }
+
+  openSettingsMenu();
+}
+
+function openSettingsMenu() {
+  settingsMenuOpen = true;
+  updateSettingsMenuState();
+}
+
+function closeSettingsMenu() {
+  settingsMenuOpen = false;
+  updateSettingsMenuState();
+}
+
+function updateSettingsMenuState() {
+  const settingsBtn = document.getElementById("settings-btn");
+  const settingsMenu = document.getElementById("settings-menu");
+
+  settingsBtn.setAttribute("aria-expanded", String(settingsMenuOpen));
+  settingsMenu.hidden = !settingsMenuOpen;
+  settingsMenu.classList.toggle("is-open", settingsMenuOpen);
+}
+
+function handleSoundToggle(event) {
+  soundEnabled = event.target.checked;
+  storeSoundEnabled(soundEnabled);
+}
+
+function handleMenuStart() {
+  if (welcomePopupOpen) {
+    hideWelcomePopup();
+  }
+  startGame();
+}
 
 function startGame() {
   // Prevent multiple games from running at once
   if (gameRunning) return;
 
+  const mode = gameModes[selectedMode] || gameModes.easy;
+  closeSettingsMenu();
   removeResultPopup();
   clearDrops();
 
   gameRunning = true;
   score = 0;
-  timeRemaining = gameDuration;
+  timeRemaining = mode.duration;
   document.getElementById("score").textContent = score;
   document.getElementById("time").textContent = timeRemaining;
+  document.querySelector(".game-wrapper").classList.add("is-playing");
 
-  // Create new drops twice per second
-  dropMaker = setInterval(createDrop, 500);
+  // Create new drops based on the selected mode
+  dropMaker = setInterval(() => createDrop(mode), mode.spawnInterval);
 
   // Countdown timer updates once per second
   timerInterval = setInterval(() => {
@@ -49,18 +189,22 @@ function endGame() {
   gameRunning = false;
   clearInterval(dropMaker);
   clearInterval(timerInterval);
+  document.querySelector(".game-wrapper").classList.remove("is-playing");
   showResultPopup();
 }
 
 function resetGame() {
+  const mode = gameModes[selectedMode] || gameModes.easy;
   gameRunning = false;
   clearInterval(dropMaker);
   clearInterval(timerInterval);
+  closeSettingsMenu();
   removeResultPopup();
   clearDrops();
+  document.querySelector(".game-wrapper").classList.remove("is-playing");
 
   score = 0;
-  timeRemaining = gameDuration;
+  timeRemaining = mode.duration;
   document.getElementById("score").textContent = score;
   document.getElementById("time").textContent = timeRemaining;
 }
@@ -113,14 +257,14 @@ function createConfetti(container, count) {
   }
 }
 
-function createDrop() {
+function createDrop(mode) {
   // Create a new div element that will be our water drop
   const drop = document.createElement("div");
   drop.className = "water-drop";
 
   // Make drops different sizes for visual variety
   const initialSize = 60;
-  const sizeMultiplier = Math.random() * 0.6 + 0.8;
+  const sizeMultiplier = Math.random() * (mode.dropSizeMultiplier.max - mode.dropSizeMultiplier.min) + mode.dropSizeMultiplier.min;
   const size = initialSize * sizeMultiplier;
   drop.style.width = drop.style.height = `${size}px`;
 
@@ -151,6 +295,12 @@ function createDrop() {
 }
 
 function playWaterDropSound() {
+  if (!soundEnabled) {
+    return;
+  }
+
   waterDropSound.currentTime = 0;
   waterDropSound.play().catch(() => {});
 }
+
+setSelectedMode(selectedMode);
